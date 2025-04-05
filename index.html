@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تطبيق الاختبار</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 48px;
+      font-weight: bold;
+      color: #0056b3;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
+
+    #startButton {
+      display: block;
+      margin: 0 auto;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    #startButton:hover {
+      background-color: #0056b3;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    #modalContent {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 400px;
+      text-align: center;
+    }
+
+    #quizContainer {
+      display: none;
+      margin-top: 30px;
+    }
+
+    .question-container {
+      margin-bottom: 15px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .options-container {
+      margin-left: 20px;
+      margin-top: 10px;
+    }
+
+    label {
+      font-size: 16px;
+      display: block;
+    }
+
+    input[type="radio"] {
+      margin-right: 10px;
+    }
+
+    #timerContainer {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 20px;
+      z-index: 1000;
+    }
+
+    #resultContainer {
+      display: none;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .result-container h3 {
+      font-size: 24px;
+      color: #0056b3;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .incorrect {
+      color: red;
+    }
+
+    .button-container button {
+      margin-right: 10px;
+    }
+
+    /* لتوسيط كلمة "تطبيق الاختبار" */
+    .test-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #0056b3;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    /* لتوسيط كلمة "الاختبار" */
+    .quiz-title {
+      font-size: 48px;
+      font-weight: bold;
+      color: #0056b3;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    /* تعديل للتصغير على الشاشات الصغيرة */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      #modalContent {
+        width: 90%;
+      }
+
+      #quizContainer {
+        margin-top: 20px;
+      }
+
+      .question-container {
+        padding: 10px;
+      }
+
+      .options-container {
+        margin-left: 15px;
+      }
+
+      button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 10px;
+      }
+
+      .test-title, .quiz-title {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>تطبيق الاختبار</h1>
+
+  <button id="startButton">ابدأ الاختبار</button>
+
+  <!-- نافذة اختيار المدة وعدد الأسئلة -->
+  <div id="modal">
+    <div id="modalContent">
+      <h2>حدد مدة الاختبار وعدد الأسئلة</h2>
+      <label for="quizDuration">مدة الاختبار (دقائق):</label>
+      <input type="number" id="quizDuration" value="10" min="1" max="60"><br>
+      <label for="numQuestions">عدد الأسئلة:</label>
+      <input type="number" id="numQuestions" value="10" min="1" step="1"><br>
+      <button id="startQuizButton">ابدأ الاختبار</button>
+      <button id="closeModalButton">إغلاق</button>
+    </div>
+  </div>
+
+  <div id="quizContainer">
+    <form id="quizForm"></form>
+    <button id="submitButton" type="button">تسليم</button>
+  </div>
+
+  <div id="resultContainer" class="result-container">
+    <h3>النتائج</h3>
+    <div id="resultQuestions"></div>
+    <div class="button-container">
+      <button id="retrySame" type="button">إعادة الاختبار بنفس الأسئلة</button>
+      <button id="retryDifferent" type="button">إعادة الاختبار بأسئلة مختلفة</button>
+      <button id="homePage" type="button">الذهاب إلى الصفحة الرئيسية</button>
+    </div>
+  </div>
+
+  <!-- شريط المؤقت -->
+  <div id="timerContainer">
+    الوقت المتبقي: <span id="timerDisplay">00:00</span>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    let timer;
+    let quizDuration = 10; // المدة الافتراضية
+    let numQuestions = 10; // عدد الأسئلة الافتراضي
+    let selectedQuestions = []; // لحفظ الأسئلة المحددة
+    let isQuizActive = false;
+
+    document.getElementById('startButton').addEventListener('click', function() {
+      openModal();
+    });
+    document.getElementById('startQuizButton').addEventListener('click', startQuiz);
+    document.getElementById('closeModalButton').addEventListener('click', closeModal);
+    document.getElementById('submitButton').addEventListener('click', submitQuiz);
+    document.getElementById('retrySame').addEventListener('click', restartSameQuiz);
+    document.getElementById('retryDifferent').addEventListener('click', restartDifferentQuiz);
+    document.getElementById('homePage').addEventListener('click', goToHomePage);
+
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function startQuiz() {
+      quizDuration = parseInt(document.getElementById('quizDuration').value);
+      numQuestions = parseInt(document.getElementById('numQuestions').value); // تأكد من تحويلها إلى عدد صحيح
+
+      // التحقق من صحة المدخلات
+      if (quizDuration <= 0) {
+        alert("يرجى إدخال مدة وقت أكبر من 0.");
+        return;
+      }
+  
+      // التحقق من أن المدخلات هي أعداد صحيحة
+      if (numQuestions < 1 || numQuestions > questions.length) {
+        alert(`يرجى إدخال عدد صحيح بين 1 و ${questions.length} للأسئلة.`);
+        return;
+      }
+
+      closeModal();
+
+      // إخفاء كلمة "تطبيق الاختبار" فقط عند الضغط على زر "ابدأ الاختبار" في نافذة الإعدادات
+      document.querySelector('h1').style.display = 'none';
+
+      // إخفاء زر "ابدأ الاختبار" وإظهار الاختبار
+      document.getElementById('startButton').style.display = 'none';
+      document.getElementById('quizContainer').style.display = 'block';
+      document.getElementById('resultContainer').style.display = 'none';
+
+      // تحديد الأسئلة العشوائية
+      selectedQuestions = getRandomQuestions(numQuestions);
+
+      // إعداد الأسئلة في النموذج
+      const quizForm = document.getElementById('quizForm');
+      quizForm.innerHTML = ''; // إعادة تعيين الأسئلة في النموذج
+
+      selectedQuestions.forEach((q, index) => {
+        const shuffledOptions = shuffleArray([...q.options]);
+
+        const questionDiv = document.createElement('div');
+        questionDiv.classList.add('question-container');
+
+        const questionLabel = document.createElement('label');
+        questionLabel.innerHTML = `${index + 1}. ${q.question}`;
+        questionDiv.appendChild(questionLabel);
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.classList.add('options-container');
+        
+        shuffledOptions.forEach(option => {
+          const optionLabel = document.createElement('label');
+          const optionInput = document.createElement('input');
+          optionInput.type = 'radio';
+          optionInput.name = `question${index}`;
+          optionInput.value = option;
+
+          optionLabel.appendChild(optionInput);
+          optionLabel.appendChild(document.createTextNode(option));
+          optionsContainer.appendChild(optionLabel);
+          optionsContainer.appendChild(document.createElement('br'));
+        });
+
+        questionDiv.appendChild(optionsContainer);
+        quizForm.appendChild(questionDiv);
+      });
+
+      // بدء المؤقت فقط بعد بدء الاختبار
+      startTimer();
+    }
+
+    function getRandomQuestions(num) {
+      let shuffledQuestions = [...questions];
+      shuffledQuestions.sort(() => Math.random() - 0.5);
+      return shuffledQuestions.slice(0, num);
+    }
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startTimer() {
+      let timeLeft = quizDuration * 60;
+      document.getElementById('timerContainer').style.display = 'block'; // إظهار المؤقت
+
+      document.getElementById('timerDisplay').textContent = `${quizDuration}:00`;
+
+      timer = setInterval(function () {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        document.getElementById('timerDisplay').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        timeLeft--;
+
+        if (timeLeft < 0) {
+          clearInterval(timer);
+          submitQuiz();
+        }
+      }, 1000);
+    }
+
+    function submitQuiz() {
+      const resultContainer = document.getElementById('resultQuestions');
+      resultContainer.innerHTML = ''; // Clear previous results
+
+      let score = 0; // Initialize score
+
+      selectedQuestions.forEach((q, index) => {
+        const userAnswer = document.querySelector(`input[name="question${index}"]:checked`);
+        const userAnswerValue = userAnswer ? userAnswer.value : null;
+
+        const resultDiv = document.createElement('div');
+        resultDiv.classList.add('question-container');
+
+        const questionText = document.createElement('div');
+        questionText.innerHTML = `${index + 1}. ${q.question}`;
+
+        const userAnswerText = document.createElement('div');
+        if (userAnswerValue !== null) {
+          userAnswerText.innerHTML = `إجابتك: <strong>${userAnswerValue}</strong>`;
+          // Check if the answer is correct
+          if (userAnswerValue === q.correct_answer) {
+            userAnswerText.classList.add('correct');
+            score++; // Increment score for correct answer
+          } else {
+            userAnswerText.classList.add('incorrect');
+          }
+        } else {
+          userAnswerText.innerHTML = `إجابتك: <strong>لم تختار إجابة</strong>`;
+          userAnswerText.classList.add('incorrect');
+        }
+
+        const correctAnswerText = document.createElement('div');
+        correctAnswerText.innerHTML = `الإجابة الصحيحة: <strong>${q.correct_answer}</strong>`;
+        correctAnswerText.classList.add('correct');
+
+        resultDiv.appendChild(questionText);
+        resultDiv.appendChild(userAnswerText);
+        resultDiv.appendChild(correctAnswerText);
+
+        resultContainer.appendChild(resultDiv);
+      });
+
+      // Display the score at the end
+      const scoreDiv = document.createElement('div');
+      scoreDiv.innerHTML = `<h3>النتيجة: ${score} من ${selectedQuestions.length}</h3>`;
+      resultContainer.appendChild(scoreDiv);
+
+      document.getElementById('quizContainer').style.display = 'none';
+      document.getElementById('resultContainer').style.display = 'block';
+
+      // Hide the timer when the quiz ends
+      document.getElementById('timerContainer').style.display = 'none';
+      clearInterval(timer); // Stop the timer
+    }
+
+    function restartSameQuiz() {
+      // إعادة الاختبار بنفس الأسئلة المخزنة
+      clearInterval(timer);
+      document.getElementById('resultContainer').style.display = 'none';
+      document.getElementById('quizContainer').style.display = 'block';
+      
+      // استخدم نفس الأسئلة المخزنة
+      loadQuiz(selectedQuestions); // إعادة تحميل الأسئلة نفسها
+      startTimer(); // إعادة تشغيل المؤقت
+    }
+
+    function loadQuiz(questionsToLoad) {
+      const quizForm = document.getElementById('quizForm');
+      quizForm.innerHTML = ''; // إعادة تعيين الأسئلة في النموذج
+
+      questionsToLoad.forEach((q, index) => {
+        const shuffledOptions = shuffleArray([...q.options]);
+
+        const questionDiv = document.createElement('div');
+        questionDiv.classList.add('question-container');
+
+        const questionLabel = document.createElement('label');
+        questionLabel.innerHTML = `${index + 1}. ${q.question}`;
+        questionDiv.appendChild(questionLabel);
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.classList.add('options-container');
+        
+        shuffledOptions.forEach(option => {
+          const optionLabel = document.createElement('label');
+          const optionInput = document.createElement('input');
+          optionInput.type = 'radio';
+          optionInput.name = `question${index}`;
+          optionInput.value = option;
+
+          optionLabel.appendChild(optionInput);
+          optionLabel.appendChild(document.createTextNode(option));
+          optionsContainer.appendChild(optionLabel);
+          optionsContainer.appendChild(document.createElement('br'));
+        });
+
+        questionDiv.appendChild(optionsContainer);
+        quizForm.appendChild(questionDiv);
+      });
+    }
+
+    function restartDifferentQuiz() {
+      clearInterval(timer);
+      document.getElementById('resultContainer').style.display = 'none';
+      document.getElementById('quizContainer').style.display = 'block';
+
+      // تحديد أسئلة عشوائية جديدة
+      selectedQuestions = getRandomQuestions(numQuestions);
+      loadQuiz(selectedQuestions); // إعادة تحميل الأسئلة الجديدة
+      startTimer(); // إعادة تشغيل المؤقت
+    }
+
+    function goToHomePage() {
+      location.reload(); // إعادة تحميل الصفحة للعودة إلى الصفحة الرئيسية
+    }
+  </script>
+
+</body>
+</html>
