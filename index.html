@@ -176,6 +176,23 @@
       background-color: #218838;
     }
 
+    #joinGroupQuiz{
+      display: block;
+      margin: 10px auto;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    
+    #joinGroupQuiz:hover{
+      background-color: #218838;
+    }
+
     /* تعديل للتصغير على الشاشات الصغيرة */
     @media (max-width: 768px) {
       body {
@@ -216,7 +233,7 @@
 
   <button id="startButton">ابدأ الاختبار</button>
   <button id="createGroupQuiz" style="display: block;">إنشاء الاختبار في مجموعة</button>
-
+  <button id="joinGroupQuiz" style="display: block;">الانضمام لاختبار مجموعة</button>
 
   <!-- نافذة اختيار المدة وعدد الأسئلة -->
   <div id="modal">
@@ -286,6 +303,7 @@
 
     function closeModal() {
       document.getElementById('modal').style.display = 'none';
+      document.getElementById('startQuizButton').style.display = 'inline-block'; // إعادة الزر الافتراضي
     }
 
     function startQuiz() {
@@ -314,7 +332,7 @@
       document.getElementById('createGroupQuiz').style.display = 'none'; // إخفاء زر "إنشاء الاختبار في مجموعة"
       document.getElementById('quizContainer').style.display = 'block';
       document.getElementById('resultContainer').style.display = 'none';
-
+      document.getElementById('joinGroupQuiz').style.display = 'none';
       // تحديد الأسئلة العشوائية
       selectedQuestions = getRandomQuestions(numQuestions);
 
@@ -370,7 +388,7 @@
       let timeLeft = quizDuration * 60;
       document.getElementById('timerContainer').style.display = 'block'; // إظهار المؤقت
 
-      document.getElementById('timerDisplay').textContent = `${quizDuration}:00`;
+      document.getElementById('timerDisplay').textContent = `${quizDuration < 10 ? '0' : ''}${quizDuration}:00`;
 
       timer = setInterval(function () {
         let minutes = Math.floor(timeLeft / 60);
@@ -380,6 +398,7 @@
 
         if (timeLeft < 0) {
           clearInterval(timer);
+          alert("انتهى الوقت! سيتم تسليم الاختبار الآن.");
           submitQuiz();
         }
       }, 1000);
@@ -429,8 +448,12 @@
 
       // Display the score at the end
       const scoreDiv = document.createElement('div');
-      scoreDiv.innerHTML = `<h3>النتيجة: ${score} من ${selectedQuestions.length}</h3>`;
+      const scoreText = document.createElement('h3');
+      scoreText.textContent = `النتيجة: ${score} من ${selectedQuestions.length}`;
+      scoreText.style.color = (score >= selectedQuestions.length / 2) ? 'green' : 'red';
+      scoreDiv.appendChild(scoreText);
       resultContainer.appendChild(scoreDiv);
+
 
       document.getElementById('quizContainer').style.display = 'none';
       document.getElementById('resultContainer').style.display = 'block';
@@ -511,6 +534,10 @@
        groupBtn.textContent = 'إنشاء الاختبار';
        groupBtn.style.marginTop = '10px';
        groupBtn.onclick = createGroupQuiz;
+
+       // إخفاء زر "ابدأ الاختبار" الأصلي داخل المودال
+       document.getElementById('startQuizButton').style.display = 'none';
+       
        modalContent.appendChild(groupBtn);
       }
     }
@@ -556,6 +583,20 @@
     });
 
   </script>
-
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxj2EnEfDk1XjvR05OzY2OO__Lz8vyfQk",
+      authDomain: "knowledgtest-5c2ec.firebaseapp.com",
+      projectId: "knowledgtest-5c2ec",
+    };
+  
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+  
 </body>
 </html>
