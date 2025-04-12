@@ -54,7 +54,10 @@
     button:hover {
       background-color: #0056b3;
     }
-
+    #submitButton {
+      display: block;
+      margin: 20px auto;
+}
     #modal {
       display: none;
       position: fixed;
@@ -87,6 +90,8 @@
       padding: 15px;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      direction: rtl; 
+      text-align: right; 
     }
 
     .options-container {
@@ -140,7 +145,7 @@
       margin-right: 10px;
     }
 
-    /* لتوسيط كلمة "تطبيق الاختبار" */
+    /* لتوسيط كلمة "اختبر فهمك" */
     .test-title {
       font-size: 48px;
       font-weight: bold;
@@ -229,7 +234,7 @@
 </head>
 <body>
 
-  <h1>تطبيق الاختبار</h1>
+  <h1>اختبر فهمك</h1>
 
   <button id="startButton">ابدأ الاختبار</button>
   <button id="createGroupQuiz" style="display: block;">إنشاء الاختبار في مجموعة</button>
@@ -324,7 +329,7 @@
 
       closeModal();
 
-      // إخفاء كلمة "تطبيق الاختبار" فقط عند الضغط على زر "ابدأ الاختبار" في نافذة الإعدادات
+      // إخفاء كلمة "اختبر فهمك" فقط عند الضغط على زر "ابدأ الاختبار" في نافذة الإعدادات
       document.querySelector('h1').style.display = 'none';
 
       // إخفاء زر "ابدأ الاختبار" وإظهار الاختبار
@@ -541,6 +546,43 @@
        modalContent.appendChild(groupBtn);
       }
     }
+
+    function createGroupQuiz() {
+      const duration = parseInt(document.getElementById('quizDuration').value);
+      const numQ = parseInt(document.getElementById('numQuestions').value);
+
+      if (duration <= 0 || numQ <= 0 || numQ > questions.length) {
+        alert("يرجى إدخال مدة وعدد أسئلة صالح.");
+        return;
+      }
+
+      const selected = getRandomQuestions(numQ);
+      const code = generateQuizCode(); // توليد كود فريد
+
+      db.collection("groupQuizzes").doc(code).set({
+        code: code,
+        questions: selected,
+        duration: duration,
+        numQuestions: numQ,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        closeModal();
+        alert(`✅ تم إنشاء الاختبار!\n📢 شارك هذا الكود مع طلابك: ${code}`);
+      }).catch((error) => {
+        console.error("❌ خطأ في إنشاء الاختبار:", error);
+        alert("حدث خطأ أثناء إنشاء الاختبار.");
+      });
+    } 
+    
+    function generateQuizCode(length = 6) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code = "";
+      for (let i = 0; i < length; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
     function submitJoinCode() {
       const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
 
@@ -548,6 +590,7 @@
         alert("يرجى إدخال كود صالح.");
         return;
       }
+      
 
       // هنا لاحقًا سيتم جلب الاختبار من Firebase أو Netlify Function
       fetch(`/api/get-quiz?code=${code}`) // هذا مثال وسنجهزه لاحقًا
