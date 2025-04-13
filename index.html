@@ -608,7 +608,7 @@
       
 
       // هنا لاحقًا سيتم جلب الاختبار من Firebase أو Netlify Function
-      fetch(`/api/get-quiz?code=${code}`) // هذا مثال وسنجهزه لاحقًا
+      fetch('/.netlify/functions/get-quiz?code=' + code) 
         .then(res => res.json())
         .then(data => {
           if (data && data.questions) {
