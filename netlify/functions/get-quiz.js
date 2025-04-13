@@ -1,15 +1,14 @@
-const { initializeApp, applicationDefault } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
+const admin = require("firebase-admin");
 
-// Initialize Firebase admin only once
-let app;
-if (!app) {
-  app = initializeApp({
-    credential: applicationDefault(),
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG_JSON);
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 
-const db = getFirestore();
+const db = admin.firestore();
 
 exports.handler = async (event, context) => {
   const code = event.queryStringParameters.code;
