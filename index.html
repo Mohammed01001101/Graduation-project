@@ -348,15 +348,44 @@
   <!-- شريط المؤقت -->
   <div id="timerContainer">
     الوقت المتبقي: <span id="timerDisplay">00:00</span>
+    <button id="addTimeButton" style="
+      margin-right: 10px;
+      background-color: #ffc107;
+      color: #333;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+    ">
+      ⏳ إضافة 5 دقائق
+    </button>
   </div>
+  <div id="toast" style="
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background-color: #333;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  "></div>
 
   <script src="data.js"></script>
   <script>
     let timer;
+    let startTime = null;
     let quizDuration = 10; // المدة الافتراضية
     let numQuestions = 10; // عدد الأسئلة الافتراضي
     let selectedQuestions = []; // لحفظ الأسئلة المحددة
     let isQuizActive = false;
+    let timeLeft = 0;
 
     document.getElementById('startButton').addEventListener('click', function() {
       openModal();
@@ -465,7 +494,8 @@
     }
 
     function startTimer() {
-      let timeLeft = quizDuration * 60;
+      startTime = new Date();
+      timeLeft = quizDuration * 60;
       document.getElementById('timerContainer').style.display = 'block'; // إظهار المؤقت
 
       document.getElementById('timerDisplay').textContent = `${quizDuration < 10 ? '0' : ''}${quizDuration}:00`;
@@ -525,6 +555,15 @@
 
         resultContainer.appendChild(resultDiv);
       });
+      
+      const endTime = new Date();
+      const timeSpentInSeconds = Math.floor((endTime - startTime) / 1000);
+      const minutesSpent = Math.floor(timeSpentInSeconds / 60);
+      const secondsSpent = timeSpentInSeconds % 60;
+
+      const timeSpentText = document.createElement('div');
+      timeSpentText.innerHTML = `⏱️ الوقت المستغرق: <strong>${minutesSpent} دقيقة ${secondsSpent} ثانية</strong>`;
+      resultContainer.appendChild(timeSpentText);
 
       // Display the score at the end
       const scoreDiv = document.createElement('div');
@@ -568,6 +607,11 @@
       loadQuiz(selectedQuestions); // إعادة تحميل الأسئلة نفسها
       startTimer(); // إعادة تشغيل المؤقت
     }
+    
+    document.getElementById('addTimeButton').addEventListener('click', () => {
+      timeLeft += 5 * 60;
+      showToast("⏱️ تمت إضافة 5 دقائق إلى الوقت المتبقي!");
+    });
 
     function loadQuiz(questionsToLoad) {
       const quizForm = document.getElementById('quizForm');
@@ -636,6 +680,20 @@
        modalContent.appendChild(groupBtn);
       }
     }
+    
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.style.display = 'block';
+      toast.style.opacity = '1';
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 500);
+      }, duration);
+    }
 
     function createGroupQuiz() {
       const duration = parseInt(document.getElementById('quizDuration').value);
@@ -645,7 +703,7 @@
         alert("يرجى إدخال مدة وعدد أسئلة صالح.");
         return;
       }
-
+     
       const selected = getRandomQuestions(numQ);
       const code = generateQuizCode(); // توليد كود فريد
 
