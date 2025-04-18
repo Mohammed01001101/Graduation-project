@@ -268,7 +268,12 @@
   <!-- نافذة اختيار المدة وعدد الأسئلة -->
   <div id="modal">
     <div id="modalContent">
-      <h2>حدد مدة الاختبار وعدد الأسئلة</h2>
+      <h2>حدد المادة ومدة الاختبار وعدد الأسئلة</h2>
+      <label for="quizSubject">اختر المادة:</label>
+      <select id="quizSubject" style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px;">
+        <option value="cyber">الأمن السيبراني</option>
+        <option value="design">التصميم الهندسي</option>
+      </select>
       <label for="quizDuration">مدة الاختبار (دقائق):</label>
       <input type="number" id="quizDuration" value="10" min="1" max="60"><br>
       <label for="numQuestions">عدد الأسئلة:</label>
@@ -484,9 +489,10 @@
     }
 
     function getRandomQuestions(num) {
-      let shuffledQuestions = [...questions];
-      shuffledQuestions.sort(() => Math.random() - 0.5);
-      return shuffledQuestions.slice(0, num);
+      const subject = document.getElementById('quizSubject').value;
+      const filtered = questions.filter(q => q.subject === subject);
+      const shuffled = filtered.sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, num);
     }
 
     function shuffleArray(array) {
@@ -695,23 +701,25 @@
       }, duration);
     }
 
-    function createGroupQuiz() {
+    async function createGroupQuiz() {
       const duration = parseInt(document.getElementById('quizDuration').value);
       const numQ = parseInt(document.getElementById('numQuestions').value);
+      const subject = document.getElementById('quizSubject').value;
 
-      if (duration <= 0 || numQ <= 0 || numQ > questions.length) {
+      if (duration <= 0 || numQ <= 0) {
         alert("يرجى إدخال مدة وعدد أسئلة صالح.");
         return;
       }
-     
-      const selected = getRandomQuestions(numQ);
-      const code = generateQuizCode(); // توليد كود فريد
+
+      const selected = getRandomQuestions(numQ, subject);
+      const code = generateQuizCode();
 
       db.collection("groupQuizzes").doc(code).set({
         code: code,
         questions: selected,
         duration: duration,
         numQuestions: numQ,
+        subject: subject,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         closeModal();
@@ -721,7 +729,7 @@
         console.error("❌ خطأ في إنشاء الاختبار:", error);
         alert("حدث خطأ أثناء إنشاء الاختبار.");
       });
-    } 
+    }
     
     function generateQuizCode(length = 6) {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
