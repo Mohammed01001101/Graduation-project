@@ -17,7 +17,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
   </script>
-  <title>اختبر فهمك</title>
+  <title>اختبر معلوماتك</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -259,7 +259,7 @@
 </head>
 <body>
 
-  <h1>اختبر فهمك</h1>
+  <h1>اختبر معلوماتك</h1>
 
   <button id="startButton">ابدأ الاختبار</button>
   <button id="createGroupQuiz" style="display: block;">إنشاء الاختبار في مجموعة</button>
@@ -431,8 +431,8 @@
       }
   
       // التحقق من أن المدخلات هي أعداد صحيحة
-      if (numQuestions < 1 || numQuestions > questions.length) {
-        alert(`يرجى إدخال عدد صحيح بين 1 و ${questions.length} للأسئلة.`);
+      if (numQuestions < 1 || numQuestions > 75) {
+        alert(`يرجى إدخال عدد صحيح بين 1 و 75 للأسئلة.`);
         return;
       }
 
